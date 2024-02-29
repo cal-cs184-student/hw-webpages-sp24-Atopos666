@@ -45,6 +45,8 @@
 
 <br><br>
 
+<b>Webpage Link:</b><a href="https://cal-cs184-student.github.io/hw-webpages-sp24-Atopos666/" target="_blank" rel="noopener noreferrer">https://cal-cs184-student.github.io/hw-webpages-sp24-Atopos666/</a>
+
 <div>
 
 <h2 align="middle">Overview</h2>
@@ -489,6 +491,8 @@ I increase the number of triangles in a mesh using the Loop subdivision algorith
     If you have implemented any extra credit extensions, explain what you did and document how they work with screenshots.
 </b>
 <p>
+    I implemented this part with Xinzhe Wei(SID:3039814755) 
+    <br>
     I implemented another mesh loop subdivision method √3-subdivision as an extra credit extension, which is a variant of the loop subdivision. The √3-subdivision algorithm is similar to the loop subdivision algorithm, but it uses a different set of weights to calculate the new positions of the vertices. The √3-subdivision algorithm is more aggressive than the loop subdivision algorithm, and it produces a smoother mesh with fewer artifacts.
     <br>
     In splitFace function, I perform a face split operation as part of a √3 subdivision by creating a new vertex at the centroid of the original face. I then create new edges and faces, reassigning connections between the original and new halfedges, vertices, and edges to form three new faces out of the original one. Finally, I update the mesh's topology to include these changes, returning the new central vertex. This effectively splits the original face into three smaller faces centered around the new vertex. And at last add this fuction to class HalfedgeMesh in halfEdgeMesh.h.

@@ -97,7 +97,7 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
   In Part 4, we implemented at_least_one_bounce() to achieve global illumination rendering. Throughout this process, we explored how to progressively build up global illumination by continuously sampling reflected rays until convergence. Ingenious techniques during recursion allow us to isolate the deepest layers of reflected light, which is remarkable. Finally, we employed Russian Roulette to randomly terminate functions, preventing exponentially decreasing rays from dissipating endlessly.
 </p>    
 <p>
-    In part 5, we implemented the adaptive sampling and compared the results with various sample-per-pixel rates. This part is the easiest part to implement but its rendering time is too long so it takes a long time to debug.
+    In part 5, we implemented the adaptive sampling and compared the results with various sample-per-pixel rates. This part is the easiest part to implement but its rendering time is too long so it takes a long time to debug. There is a real not obvious bug that I don't change the sample number when it comes a early break.
 </p>
 <br>
 
@@ -111,7 +111,11 @@ Show images with normal shading for a few small .dae files. -->
 </h3>
 <p>
     
-In the rendering pipeline, rays are generated from camera through pixels into the scene, intersecting with objects to gather color and light data, then averaged to produce each pixel's final color.
+
+  In the rendering pipeline, ray generation begins by creating rays from the camera's viewpoint through each pixel on the image plane, transforming pixel coordinates into world space to establish each ray's direction. This step sets the stage for how light from the environment will be interpreted at each point in the image.
+</p>
+<p>
+  Following ray generation, the primitive intersection stage involves testing these rays against the scene's objects to find points of contact. This is where the scene's geometry directly interacts with the simulated light, determining where and how rays intersect with surfaces. Each intersection's details, such as distance and surface normal, are crucial for accurately depicting the scene's appearance.
 </p>
 <br>
 
@@ -119,8 +123,10 @@ In the rendering pipeline, rays are generated from camera through pixels into th
   Explain the triangle intersection algorithm you implemented in your own words.
 </h3>
 <p>
-    
-The implemented algorithm checks if a ray intersects a triangle by calculating the intersection point in terms of the triangle's plane and edges. It uses the ray's direction and origin to compute barycentric coordinates, determining if the point is within the triangle's boundaries. If the calculations fall within specific ranges, the ray intersects the triangle; otherwise, it does not.
+  In the triangle intersection algorithm I implemented, I start by creating two vectors along the edges of the triangle from one vertex to the other two. Using these edge vectors and the direction of the incoming ray, I perform cross products and dot products to project the ray onto the plane of the triangle to find a potential intersection point.
+</p>
+<P>
+  I then check if this intersection point is within the boundaries of the triangle. This involves using barycentric coordinates, which are like weights that show how close the intersection point is to each vertex of the triangle. I calculate these by comparing the area the point forms with each pair of vertices against the total area of the triangle.
 </p>
 <br>
 

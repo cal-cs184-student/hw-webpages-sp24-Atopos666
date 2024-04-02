@@ -1,7 +1,366 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Homework 4 index.html here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+</style>
+<title>CS 184 Mesh Editor</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+<h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2024</h1>
+<h1 align="middle">Project 4: Cloth Simulator</h1>
+<h2 align="middle">YOUR NAME, CS184-Huasen Xi, Ruijie Jian</h2>
+
+<br><br>
+<h2 align="middle">Website URL: <a href="https://cal-cs184-student.github.io/hw-webpages-sp24-Atopos666/" target="_blank" rel="noopener noreferrer">https://cal-cs184-student.github.io/hw-webpages-sp24-Atopos666/</a></h2>
+
+<br><br>
+<div>
+
+<h2 align="middle">Overview</h2>
+<p>
+  In this project, we implemented a cloth simulator using mass-spring system. We used the Verlet integration method to simulate the cloth. The cloth is represented by a grid of particles connected by springs. 
+</p>
+<p>
+  In the first part of the project, we implemented a mass-spring system to simulate a cloth. The cloth is represented by a grid of particles connected by springs.
+</p>
+<p>
+  In the second part of the project, we integrate the physical equations of motion in order to apply the forces on our cloth's point masses to figure out how they move from one time step to the next. We used the Verlet integration method to simulate the cloth and implemented the gravity force, spring force, and damping force.
+<p>
+  In the third part of the project, we implemented a collision detection system to handle collisions between the cloth and a sphere and a plane. We bump the cloth particles back to the surface of the sphere or plane when they collide with them. 
+</p>
+<p>
+  In the fourth part of the project, we implemented self-collision detection to handle collisions between the cloth and itself. In this part, we used hash grid to accelerate the collision detection process.
+</p>
+<p>
+  In the fifth section, we wrote some basic GLSL shader programs to accelerate the rendering of ray tracing, which are divided into vertex shaders and fragment shaders for completion.
+</p>
+
+<h2 align="middle">Part I: Masses and springs</h2>
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <img src="image/with_all.png" align="middle" width="700px"/>
+      <figcaption>will all springs</figcaption>
+    </tr>
+    <tr align="center">
+      <td>
+        <img src="image/without_shearing.png" align="middle" width="400px"/>
+        <figcaption>without shearing springs</figcaption>
+      </td>
+      <td>
+        <img src="image/only_with_shearing.png" align="middle" width="400px"/>
+        <figcaption>only with shearing springs</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+<br>
+
+<h2 align="middle">Part II: Simulation via numerical integration</h2>
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <img src="image/normal_param.png" align="middle" width="800px"/>
+      <figcaption>normal parameters</figcaption>
+    </tr>
+    <tr align="center">
+      <td>
+        <img src="image/high_ks.png" align="middle" width="400px"/>
+        <figcaption>with high ks</figcaption>
+      </td>
+      <td>
+        <img src="image/low_ks.png" align="middle" width="400px"/>
+        <figcaption>with low ks</figcaption>
+      </td>
+    </tr>
+    <tr align="center">
+      <td>
+        <img src="image/high_density.png" align="middle" width="400px"/>
+        <figcaption>with high density</figcaption>
+      </td>
+      <td>
+        <img src="image/low_density.png" align="middle" width="400px"/>
+        <figcaption>with low density</figcaption>
+      </td>
+    </tr>
+    <tr align="center">
+      <td>
+        <img src="image/high_damping.png" align="middle" width="400px"/>
+        <figcaption>with high damping</figcaption>
+      </td>
+      <td>
+        <img src="image/low_damping.png" align="middle" width="400px"/>
+        <figcaption>with low damping</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<p>
+  The first image shows the cloth with normal parameters. It is stable and has a good shape. 
+</p>
+
+<p>
+  The second image shows the cloth with high ks. The cloth will shake violently because the spring force is too strong to stabilize the cloth.
+</p>
+
+<p>
+  The third image shows the cloth with low ks. The cloth will be very soft and the shape will be deformed because the spring force is too weak and it takes a long time to stabilize the cloth.
+</p>
+
+<p>
+  The fourth image shows the cloth with high density. The cloth will be jagged since the gravity force is too strong so the cloth will be pulled down strongly.
+</p>
+
+<p>
+  The fifth image shows the cloth with low density. The cloth will be very soft and the shape will be like a plane because the gravity force is too weak.
+</p>
+
+<p>
+  The sixth image shows the cloth with high damping. The cloth will be very soft and it will not shake left and right because the damping force is too strong.
+</p>
+
+<p>
+  The seventh image shows the cloth with low damping. The cloth will shake violently because the damping force is too weak to stabilize the cloth.
+</p>
+
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <img src="image/pinned4_end.png" align="middle" width="800px"/>
+      <figcaption>4 pinned points' cloth's endding state</figcaption>
+    </tr>
+  </table>
+</div>
+
+<h2 align="middle">Part III: Handling collisions with other objects</h2>
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <img src="image/ks=50.png" align="middle" width="800px"/>
+      <figcaption>with ks=50's cloth</figcaption>
+    </tr>
+    <tr align="center">
+      <img src="image/ks=500.png" align="middle" width="800px"/>
+      <figcaption>with ks=500's cloth</figcaption>
+    </tr>
+    <tr align="center">
+      <img src="image/ks=5000.png" align="middle" width="800px"/>
+      <figcaption>with ks=5000's cloth</figcaption>
+    </tr>
+  </table>
+</div>
+
+<p>
+  When decreasing ks, the cloth will be more likely to collide with the sphere because the spring force is weaker. And the cloth's bounding will be droopier because the spring force is weaker.
+</p>
+
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <img src="image/lying_plane.png" align="middle" width="800px"/>
+      <figcaption>lying plane's cloth</figcaption>
+  </table>
+</div>
+
+<h2 align="middle">Part IV: Handling self-collisions</h2>
+
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <img src="image/selfcollision_begin.png" align="middle" width="800px"/>
+      <figcaption>self-collision's beginning state</figcaption>
+    </tr>
+    <tr align="center">
+      <img src="image/selfcollision_medium.png" align="middle" width="800px"/>
+      <figcaption>self-collision's medium state</figcaption>
+    </tr>
+    <tr align="center">
+      <img src="image/selfcollision_end.png" align="middle" width="800px"/>
+      <figcaption>self-collision's endding state</figcaption>
+    </tr>
+  </table>
+</div>
+<br><br><br>
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="image/self_high_dens.png" align="middle" width="400px"/>
+        <figcaption>with high density</figcaption>
+      </td>
+      <td>
+        <img src="image/self_low_dens.png" align="middle" width="400px"/>
+        <figcaption>with low density</figcaption>
+      </td>
+    </tr>
+    <tr align="center">
+      <td>
+        <img src="image/self_high_ks.png" align="middle" width="400px"/>
+        <figcaption>with high ks</figcaption>
+      </td>
+      <td>
+        <img src="image/self_low_ks.png" align="middle" width="400px"/>
+        <figcaption>with low ks</figcaption>
+      </td>
+  </table>
+</div>
+
+<p>
+  When increasing density or decreasing ks, the cloth will be more likely to collide with itself since the cloth will be more dense and the spring force will be weaker. And the cloth will take a longer time to stabilize because it shakes constantly.
+
+</p>
+
+<p>
+  When increasing ks to a very high value, the cloth will almost fly away because the spring force is too strong to stabilize the cloth.
+  And when we decrease density to a very low value, the cloth will be very soft and the shape will be deformed.
+</p>
+
+<h2 align="middle">Part V: Shaders</h2>
+
+<p>
+  Shader programs are small programs that run on the GPU during graphics rendering, capable of calculating vertex positions, colors, texture coordinates, lighting, and more. The vertex shader is the first part of the shader, which processes each vertex's data, transforming vertex positions into screen space, computing vertex lighting, and passing the vertex's color, texture coordinates, normals, and other data to the fragment shader. The fragment shader is the second part of the shader, which receives data from the vertex shader and calculates the final color, lighting effects, and other visual effects for each pixel.
+</p>
+
+<p>
+  The Blinn-Phong shading model is a lighting model used in computer graphics to simulate the interaction of light with object surfaces. Its core concept is to divide the lighting into three components: ambient light, diffuse light, and specular light, which together account for the interaction between light and the object's surface.
+</p>
+
+<p>
+  Blinn-Phong images are as follows.
+</p>
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="image/bp_1.png" align="middle" width="400px"/>
+        <figcaption>ambient component</figcaption>
+      </td>
+      <td>
+        <img src="image/bp_2.png" align="middle" width="400px"/>
+        <figcaption>diffuse component</figcaption>
+      </td>
+    </tr>
+    <tr align="center">
+      <td>
+        <img src="image/bp_3.png" align="middle" width="400px"/>
+        <figcaption>specular component</figcaption>
+      </td>
+      <td>
+        <img src="image/bp_4.png" align="middle" width="400px"/>
+        <figcaption>entire Blinn-Phong model</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<p>
+  Texture mapping shader using my own custom texture:
+</p>
+<div align="middle">
+  <img src="image/texture.png" align="middle" width="400px"/>
+  <figcaption>entire Blinn-Phong model</figcaption>
+</div>
+
+<p>
+  Bump mapping and displace mapping:
+</p>
+
+<p>
+  Bump mapping is used to simulate subtle surface irregularities by changing the direction of the surface normals. This affects the calculation of lighting, making the surface appear to have high and low variations, although the actual geometry of the surface does not change. Displacement mapping, on the other hand, actually alters the geometry of the object's surface based on texture information, requiring higher computational resources. In terms of rendering results, displacement mapping provides a more three-dimensional and realistic effect at the edges compared to bump mapping.
+</p>
+
+<P>
+  Below are images of results of the 2 approaches.
+</P>
+
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="image/b_1.png" align="middle" width="400px"/>
+        <figcaption>bump mapping: sphere</figcaption>
+      </td>
+      <td>
+        <img src="image/b_2.png" align="middle" width="400px"/>
+        <figcaption>bump mapping: cloth</figcaption>
+      </td>
+    </tr>
+    <tr align="center">
+      <td>
+        <img src="image/d_1.png" align="middle" width="400px"/>
+        <figcaption>displace mapping: sphere</figcaption>
+      </td>
+      <td>
+        <img src="image/d_2.png" align="middle" width="400px"/>
+        <figcaption>displace mapping: cloth</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<p>
+  Below are the rendering results of the two approaches at different resolutions. Bump mapping only changes the lighting effect, not the geometry, with no significant difference between 16x and 128x; displacement mapping alters the actual geometry, with details dependent on mesh density, revealing more pronounced brick details and smoother edges at higher resolutions.
+</p>
+
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="image/b16.png" align="middle" width="400px"/>
+        <figcaption>bump mapping: 16x</figcaption>
+      </td>
+      <td>
+        <img src="image/bb.png" align="middle" width="400px"/>
+        <figcaption>bump mapping: 128x</figcaption>
+      </td>
+    </tr>
+    <tr align="center">
+      <td>
+        <img src="image/d16.png" align="middle" width="400px"/>
+        <figcaption>displace mapping: 16x</figcaption>
+      </td>
+      <td>
+        <img src="image/dd.png" align="middle" width="400px"/>
+        <figcaption>displace mapping: 128x</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+ Mirror shader on the cloth and on the sphere:
+</p>
+
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="image/m1.png" align="middle" width="400px"/>
+        <figcaption>mirror shader: sphere</figcaption>
+      </td>
+      <td>
+        <img src="image/m2.png" align="middle" width="400px"/>
+        <figcaption>mirror shader: cloth</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+</body>
 </html>
